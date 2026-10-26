@@ -2,7 +2,7 @@ name: Quark Check-in
 
 on:
   schedule:
-    - cron: '5 1 * * *'   # 北京时间每天 09:05
+    - cron: '30 22 * * *' # 北京时间每天 06:30
     - cron: '5 5 * * *'   # 北京时间每天 13:05（二次尝试）
   workflow_dispatch: {}
 
