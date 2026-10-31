@@ -2,9 +2,12 @@ name: Quark Check-in
 
 on:
   schedule:
-    - cron: '30 22 * * *' # 北京时间每天 06:30
-    - cron: '5 5 * * *'   # 北京时间每天 13:05（二次尝试）
+    - cron: '0 * * * *'
   workflow_dispatch: {}
+
+concurrency:
+  group: quark-checkin
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -13,18 +16,22 @@ jobs:
   checkin:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install deps
-        run: pip install requests
-
+      - run: pip install requests
       - name: Run Quark check-in
         env:
           COOKIE_QUARK: ${{ secrets.COOKIE_QUARK }}
         run: python checkIn_Quark.py
+      - name: Keep-alive commit
+        run: |
+          if [ "$(date +%d)" = "01" ]; then
+            date -u > .keepalive
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .keepalive
+            git commit -m "chore: keep-alive $(date -u +%Y-%m)" || exit 0
+            git push
+          fi
